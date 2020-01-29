@@ -1,36 +1,15 @@
-import { parse } from 'graphql';
 import { validate } from 'graphql/validation';
 import { buildASTSchema } from 'graphql/utilities/buildASTSchema';
-import { GraphQLError } from 'graphql/error';
 import { validateSDL } from 'graphql/validation/validate';
 import { validateSchema } from 'graphql/type/validate';
 import { ValidationError } from './validation_error';
 
 export function validateSchemaDefinition(
-  schemaDefinition,
+  schemaDefinitionAST,
   rules,
   configuration
 ) {
-  let ast;
-
-  let parseOptions = {};
-  if (configuration.getOldImplementsSyntax()) {
-    parseOptions.allowLegacySDLImplementsInterfaces = true;
-  }
-
-  try {
-    ast = parse(schemaDefinition, parseOptions);
-  } catch (e) {
-    if (e instanceof GraphQLError) {
-      e.ruleName = 'graphql-syntax-error';
-
-      return [e];
-    } else {
-      throw e;
-    }
-  }
-
-  let schemaErrors = validateSDL(ast);
+  let schemaErrors = validateSDL(schemaDefinitionAST);
   if (schemaErrors.length > 0) {
     return sortErrors(
       schemaErrors.map(error => {
@@ -43,7 +22,7 @@ export function validateSchemaDefinition(
     );
   }
 
-  const schema = buildASTSchema(ast, {
+  const schema = buildASTSchema(schemaDefinitionAST, {
     commentDescriptions: configuration.getCommentDescriptions(),
     assumeValidSDL: true,
     assumeValid: true,
@@ -57,7 +36,7 @@ export function validateSchemaDefinition(
         return new ValidationError(
           'invalid-graphql-schema',
           error.message,
-          error.nodes || ast
+          error.nodes || schemaDefinitionAST
         );
       })
     );
@@ -67,7 +46,8 @@ export function validateSchemaDefinition(
     return ruleWithConfiguration(rule, configuration);
   });
 
-  const errors = validate(schema, ast, rulesWithConfiguration);
+  const errors = validate(schema, schemaDefinitionAST, rulesWithConfiguration);
+
   const sortedErrors = sortErrors(errors);
 
   return sortedErrors;

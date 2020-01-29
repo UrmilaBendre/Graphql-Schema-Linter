@@ -44,6 +44,13 @@ function parseInlineComment(token) {
         rules: parseRulesArg(matches[3]),
         line: token.line,
       };
+
+    case 'lint-enable-line':
+      return {
+        command: 'enable-line',
+        rules: parseRulesArg(matches[3]),
+        line: token.line,
+      };
   }
 }
 

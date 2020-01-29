@@ -1,4 +1,6 @@
 import { validateSchemaDefinition } from './validator.js';
+import { parse } from 'graphql';
+import { GraphQLError } from 'graphql/error';
 import { version } from '../package.json';
 import { Command } from 'commander';
 import { Configuration } from './configuration.js';
@@ -83,17 +85,44 @@ export function run(stdout, stdin, stderr, argv) {
     return 2;
   }
 
-  const schema = configuration.getSchema();
-  if (schema == null) {
+  const schemaDefinition = configuration.getSchema();
+  if (schemaDefinition == null) {
     console.error('No valid schema input.');
     return 2;
   }
+
+  let schemaAST;
+
+  let parseOptions = {};
+  if (configuration.getOldImplementsSyntax()) {
+    parseOptions.allowLegacySDLImplementsInterfaces = true;
+  }
+
+  try {
+    schemaAST = parse(schemaDefinition, parseOptions);
+  } catch (e) {
+    if (e instanceof GraphQLError) {
+      e.ruleName = 'graphql-syntax-error';
+
+      return [e];
+    } else {
+      throw e;
+    }
+  }
+
   const formatter = configuration.getFormatter();
   const rules = configuration.getRules();
   const schemaSourceMap = configuration.getSchemaSourceMap();
 
-  const errors = validateSchemaDefinition(schema, rules, configuration);
+  // TODO: DO IT
+  //const inlineConfiguration = extractInlineConfigs(schemaAST);
+
+  // TODO: This should validate the schema with all possible rules
+  const errors = validateSchemaDefinition(schemaAST, rules, configuration);
   const groupedErrors = groupErrorsBySchemaFilePath(errors, schemaSourceMap);
+
+  // TODO: Then we run through each error and filter out the ones that were disabled/enabled
+  // const filteredErrors = filterErrorsWithInlineConfiguration(schemaSourceMap, inlineConfiguration, errors, startingRules);
 
   stdout.write(formatter(groupedErrors));
 

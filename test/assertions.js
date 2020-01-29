@@ -61,7 +61,11 @@ function validateSchemaWithRule(rule, schemaSDL, configurationOptions) {
   const fullSchemaSDL = `${schemaSDL}${DefaultSchema}`;
   const rules = [rule];
   const configuration = new Configuration(configurationOptions, null);
-  const errors = validateSchemaDefinition(fullSchemaSDL, rules, configuration);
+  const errors = validateSchemaDefinition(
+    parse(fullSchemaSDL),
+    rules,
+    configuration
+  );
 
   return errors;
 }

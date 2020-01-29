@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { parse } from 'graphql';
 import { validateSchemaDefinition } from '../src/validator';
 import { Configuration } from '../src/configuration';
 import { FieldsHaveDescriptions } from '../src/rules/fields_have_descriptions';
@@ -13,7 +14,7 @@ describe('validateSchemaDefinition', () => {
     const rules = [FieldsHaveDescriptions, DummyValidator];
 
     const errors = validateSchemaDefinition(
-      schemaDefinition,
+      parse(schemaDefinition),
       rules,
       configuration
     );
@@ -33,7 +34,7 @@ describe('validateSchemaDefinition', () => {
     const schemaDefinition = configuration.getSchema();
 
     const errors = validateSchemaDefinition(
-      schemaDefinition,
+      parse(schemaDefinition),
       [],
       configuration
     );
@@ -48,7 +49,7 @@ describe('validateSchemaDefinition', () => {
     const schemaDefinition = configuration.getSchema();
 
     const errors = validateSchemaDefinition(
-      schemaDefinition,
+      parse(schemaDefinition),
       [],
       configuration
     );
@@ -63,7 +64,7 @@ describe('validateSchemaDefinition', () => {
     const schemaDefinition = configuration.getSchema();
 
     const errors = validateSchemaDefinition(
-      schemaDefinition,
+      parse(schemaDefinition),
       [],
       configuration
     );
@@ -84,7 +85,7 @@ describe('validateSchemaDefinition', () => {
     const schemaDefinition = configuration.getSchema();
 
     const errors = validateSchemaDefinition(
-      schemaDefinition,
+      parse(schemaDefinition),
       [],
       configuration
     );

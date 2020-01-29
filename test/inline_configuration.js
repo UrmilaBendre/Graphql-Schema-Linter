@@ -11,7 +11,7 @@ describe('extractInlineConfigs', () => {
       }
 
       # lint-enable types-have-descriptions
-      # User description
+      """User description"""
       type User {
         email: String! # lint-disable-line fields-have-descriptions
       }
@@ -35,7 +35,7 @@ describe('extractInlineConfigs', () => {
       }
 
       # lint-enable types-have-descriptions
-      # User description
+      """User description"""
       type User {
         # lint-enable fields-have-descriptions, types-have-descriptions
         email: String!
@@ -64,7 +64,7 @@ describe('extractInlineConfigs', () => {
       }
 
       # lint-disable types-have-descriptions, another-rule
-      # User description
+      """User description"""
       type User {
         # lint-disable fields-have-descriptions
         email: String!
@@ -92,7 +92,7 @@ describe('extractInlineConfigs', () => {
         viewer: User!
       }
 
-      # User description
+      """User description"""
       type User { # lint-disable-line types-have-descriptions, another-rule
         email: String! # lint-disable-line fields-have-descriptions
       }
@@ -109,6 +109,37 @@ describe('extractInlineConfigs', () => {
         },
         {
           command: 'disable-line',
+          rules: ['fields-have-descriptions'],
+          line: 8,
+        },
+      ],
+      configs
+    );
+  });
+
+  it('extracts lint-enable-line configuration', () => {
+    const ast = parse(`
+      type Query {
+        viewer: User!
+      }
+
+      """User description"""
+      type User { # lint-enable-line types-have-descriptions, another-rule
+        email: String! # lint-enable-line fields-have-descriptions
+      }
+`);
+
+    const configs = extractInlineConfigs(ast);
+
+    assert.deepEqual(
+      [
+        {
+          command: 'enable-line',
+          rules: ['types-have-descriptions', 'another-rule'],
+          line: 7,
+        },
+        {
+          command: 'enable-line',
           rules: ['fields-have-descriptions'],
           line: 8,
         },
